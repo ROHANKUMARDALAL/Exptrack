@@ -65,7 +65,7 @@ src/
 
 ---
 
-## 🚀 Installation
+## 🚀 Installations
 
 ```bash
 npm install
