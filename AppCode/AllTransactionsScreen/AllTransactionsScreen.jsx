@@ -15,7 +15,7 @@ const AllTransactionsScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
         <CustomAppBar
-        title={route?.params?.project?.name || 'Project'}
+        title={route?.params?.projectName || 'Project'}
         onLeftPress={() => navigation.goBack()}
         leftIcon="←"
       />

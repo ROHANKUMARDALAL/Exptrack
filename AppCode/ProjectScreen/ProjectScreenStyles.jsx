@@ -295,6 +295,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
+  logoutContainer: {
+    marginTop: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+  },
+  logoutButton: {
+    width: '100%',
+  },
 });
 
 export default styles;

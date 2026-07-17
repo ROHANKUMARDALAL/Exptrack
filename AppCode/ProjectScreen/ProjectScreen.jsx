@@ -3,6 +3,8 @@ import {Animated, Easing, View, Text, SafeAreaView, TouchableOpacity, ScrollView
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 import styles from './ProjectScreenStyles';
+import TouchableButton from '../components/TouchableOpacity/TouchableOpacity';
+import { removeLoginToken } from '../utils/authStorage';
 
 const projects = [
   {name: 'Website Redesign', income: 25000, expense: 8500, savings: 16500, status: 'Active', accent: '#4f46e5'},
@@ -76,6 +78,11 @@ const ProjectScreen = () => {
     return styles.completedText;
   };
 
+  const handleLogout = async () => {
+    await removeLoginToken();
+    navigation.replace('Login');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient colors={['#f5f7ff', '#eef2ff']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.backgroundGradient}>
@@ -144,6 +151,17 @@ const ProjectScreen = () => {
                 </Animated.View>
               </TouchableOpacity>
             ))}
+            <View style={styles.logoutContainer}>
+              <TouchableButton
+                text="Logout"
+                onPress={handleLogout}
+                backgroundColor="#ef4444"
+                textColor="#fff"
+                borderRadius={18}
+                height={52}
+                style={styles.logoutButton}
+              />
+            </View>
           </ScrollView>
         </View>
       </LinearGradient>
