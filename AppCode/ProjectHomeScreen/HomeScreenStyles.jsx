@@ -371,9 +371,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmentButtonActive: {
-    backgroundColor: '#4f46e5',
-  },
+  
   segmentText: {
     color: '#111827',
   },

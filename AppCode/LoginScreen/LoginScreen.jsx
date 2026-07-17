@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,55 +11,68 @@ import {
 import Toast from 'react-native-simple-toast';
 import styles from './LoginScreenStyles';
 import TouchableButton from '../components/TouchableOpacity/TouchableOpacity';
+import { saveLoginToken, getLoginToken } from '../utils/authStorage';
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureText, setSecureText] = useState(true);
+  const DUMMY_TOKEN = 'dummy-token-12345';
+const DUMMY_EMAIL = 'admin@gmail.com';
+const DUMMY_PASSWORD = 'Admin@123';
   const validateEmail = email => {
     const regex =
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     return regex.test(email);
   };
-const DUMMY_EMAIL = 'admin@gmail.com';
-const DUMMY_PASSWORD = 'Admin@123';
-const handleLogin = () => {
- if (email.trim() === '') {
-  Toast.show('Please enter email');
-  return;
-}
 
-if (!validateEmail(email)) {
-  Toast.show('Please enter a valid email');
-  return;
-}
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await getLoginToken();
+      if (token) {
+        navigation.replace('ProjectScreen');
+      }
+    };
+    checkToken();
+  }, [navigation]);
 
-if (password.trim() === '') {
-  Toast.show('Please enter password');
-  return;
-}
+  const handleLogin = () => {
+    if (email.trim() === '') {
+      Toast.show('Please enter email');
+      return;
+    }
 
-if (password.length < 6) {
-  Toast.show('Password must be at least 6 characters');
-  return;
-}
+    if (!validateEmail(email)) {
+      Toast.show('Please enter a valid email');
+      return;
+    }
 
-  setLoading(true);
+    if (password.trim() === '') {
+      Toast.show('Please enter password');
+      return;
+    }
 
-setTimeout(() => {
-  setLoading(false);
+    if (password.length < 6) {
+      Toast.show('Password must be at least 6 characters');
+      return;
+    }
 
-  if (
-    email.toLowerCase() === DUMMY_EMAIL.toLowerCase() &&
-    password === DUMMY_PASSWORD
-  ) {
-    Toast.show('Login Successful');
-    navigation.replace('ProjectScreen');
-  } else {
-    Toast.show('Invalid email or password');
-  }
-}, 2000);
-};
+    setLoading(true);
+    setTimeout(async () => {
+      setLoading(false);
+
+      if (
+        email.toLowerCase() === DUMMY_EMAIL.toLowerCase() &&
+        password === DUMMY_PASSWORD
+      ) {
+        await saveLoginToken(DUMMY_TOKEN);
+        Toast.show('Login Successful');
+        navigation.replace('ProjectScreen');
+      } else {
+        Toast.show('Invalid email or password');
+      }
+    }, 2000);
+  };
 
 
   return (
