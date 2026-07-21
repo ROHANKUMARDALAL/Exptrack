@@ -2,7 +2,7 @@ const expenseModel = require("../models/expenseModel");
 const projectModel = require("../models/projectModel");
 const userModel = require("../models/userModel");
 const calculateSplit = require("../utils/calculateSplit");
-
+const calculateSettlement = require("../utils/calculateSettlement");
 const addExpense = async (req, res) => {
   try {
     const {
@@ -213,6 +213,45 @@ const getAllExpenses = async (req, res) => {
   }
 };
 
+// NEW: project ke saare members ka balance aur settle-up list
+const getSettlements = async (req, res) => {
+  try {
+    const { projectid } = req.params;
+
+    const project = await projectModel.findByProjectId(projectid);
+    if (!project) {
+      return res.status(404).json({
+        Error: { ErrorCode: 404, ErrorMessage: "Project not found" },
+        Data: {}
+      });
+    }
+
+    const members = project.members || [];
+    const isMember = members.some(
+      member => Number(member.id) === Number(req.user.userId)
+    );
+    if (!isMember) {
+      return res.status(403).json({
+        Error: { ErrorCode: 403, ErrorMessage: "You are not a member of this project" },
+        Data: {}
+      });
+    }
+
+    const expenses = await expenseModel.getAllExpenses(projectid);
+    const { balances, settlements } = calculateSettlement(expenses);
+
+    return res.json({
+      Error: { ErrorCode: 0, ErrorMessage: "success" },
+      Data: { balances, settlements }
+    });
+  } catch (err) {
+    console.error("Get Settlements Error :", err);
+    return res.status(500).json({
+      Error: { ErrorCode: 500, ErrorMessage: "Internal server error" },
+      Data: {}
+    });
+  }
+};
 const editExpense = async (req, res) => {
   try {
     const {
@@ -426,5 +465,5 @@ module.exports = {
   addExpense,
   getAllExpenses,
   editExpense,
-  deleteExpense
+  deleteExpense,getSettlements
 };

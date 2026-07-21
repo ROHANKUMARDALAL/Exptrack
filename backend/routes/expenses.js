@@ -7,4 +7,5 @@ router.post("/addexpense", authenticate, expenseController.addExpense);
 router.put("/editexpense", authenticate, expenseController.editExpense);
 router.get("/allexpenses/:projectid", authenticate, expenseController.getAllExpenses);
 router.delete("/deleteexpense/:expenseid",authenticate, expenseController.deleteExpense);
+router.get("/settlements/:projectid", authenticate, expenseController.getSettlements); 
 module.exports = router;
