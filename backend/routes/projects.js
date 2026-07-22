@@ -10,5 +10,8 @@ router.put('/removemember', authenticate, projectController.removeProjectMember)
 router.get('/project-members/:projectid', authenticate, projectController.getProjectMembers);
 router.put('/editproject', authenticate, projectController.editProject);
 router.delete('/deleteproject/:projectid', authenticate, projectController.deleteProject);
+router.get('/my-invitations', authenticate, projectController.getMyInvitations);
+router.put('/accept-invite', authenticate, projectController.acceptProjectInvite);
+router.put('/reject-invite', authenticate, projectController.rejectProjectInvite);
 
 module.exports = router;

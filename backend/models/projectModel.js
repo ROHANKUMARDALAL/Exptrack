@@ -138,6 +138,57 @@ const addMember = (projectid, userId) => {
     );
   });
 };
+const getPendingInvitations = (userId) => {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT p.projectid, p.projectname, p.projectadmin, pm.invited_at 
+       FROM projects p
+       JOIN project_members pm ON p.projectid = pm.project_id
+       WHERE pm.user_id = ? AND pm.status = 'pending'`,
+      [userId],
+      (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
+const acceptInvitation = (projectid, userId) => {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `UPDATE project_members SET status = 'accepted' WHERE project_id = ? AND user_id = ? AND status = 'pending'`,
+      [projectid, userId],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes);
+      }
+    );
+  });
+};
+
+const rejectInvitation = (projectid, userId) => {
+  // Reject means simply delete the row from project_members
+  return removeMember(projectid, userId); 
+};
+
+// 24 Hrs Auto-Accept logic
+const autoAcceptOldInvitations = () => {
+  return new Promise((resolve, reject) => {
+    db.run(
+      // SQLite me datetime logic use karke check karega jo 24 hours se purane hain
+      `UPDATE project_members 
+       SET status = 'accepted' 
+       WHERE status = 'pending' 
+       AND datetime(invited_at) <= datetime('now', '-24 hours')`,
+      [],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes); // Returns kitne members auto accept hue
+      }
+    );
+  });
+};
 
 const removeMember = (projectid, userId) => {
   return new Promise((resolve, reject) => {
