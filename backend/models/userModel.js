@@ -68,7 +68,18 @@ const deleteUserById = id => {
     });
   });
 };
-
+const updateUserPassword = (id, newPasswordHash) => {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'UPDATE users SET password = ? WHERE id = ?',
+      [newPasswordHash, id],
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes);
+      }
+    );
+  });
+};
 module.exports = {
   createUser,
   findByEmail,
@@ -77,4 +88,5 @@ module.exports = {
   findByIds,
   findByName,
   deleteUserById,
+  updateUserPassword
 };
