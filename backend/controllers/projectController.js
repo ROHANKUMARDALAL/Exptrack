@@ -346,6 +346,59 @@ const deleteProject = async (req, res) => {
     });
   }
 };
+const getMyInvitations = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const invitations = await projectModel.getPendingInvitations(userId);
+    return res.json({ Error: { ErrorCode: 0, ErrorMessage: 'success' }, Data: { invitations } });
+  } catch (err) {
+    console.error("Get Invitations Error:", err);
+    return res.status(500).json({ Error: { ErrorCode: 500, ErrorMessage: "Internal server error" }, Data: {} });
+  }
+};
+
+// NEW: Invite accept karna
+const acceptProjectInvite = async (req, res) => {
+  try {
+    const { projectid } = req.body;
+    const userId = req.user.userId;
+    
+    if (!projectid) {
+      return res.status(400).json({ Error: { ErrorCode: 400, ErrorMessage: "projectid is required" }, Data: {} });
+    }
+
+    const changes = await projectModel.acceptInvitation(projectid, userId);
+    if (changes === 0) {
+      return res.status(400).json({ Error: { ErrorCode: 400, ErrorMessage: "No pending invite found for this project" }, Data: {} });
+    }
+
+    return res.json({ Error: { ErrorCode: 0, ErrorMessage: "success" }, Data: { message: "Invitation accepted. You are now a member." } });
+  } catch (err) {
+    console.error("Accept Invite Error:", err);
+    return res.status(500).json({ Error: { ErrorCode: 500, ErrorMessage: "Internal server error" }, Data: {} });
+  }
+};
+
+// NEW: Invite reject karna
+const rejectProjectInvite = async (req, res) => {
+  try {
+    const { projectid } = req.body;
+    const userId = req.user.userId;
+
+    if (!projectid) {
+      return res.status(400).json({ Error: { ErrorCode: 400, ErrorMessage: "projectid is required" }, Data: {} });
+    }
+
+    await projectModel.rejectInvitation(projectid, userId);
+    
+    return res.json({ Error: { ErrorCode: 0, ErrorMessage: "success" }, Data: { message: "Invitation rejected." } });
+  } catch (err) {
+    console.error("Reject Invite Error:", err);
+    return res.status(500).json({ Error: { ErrorCode: 500, ErrorMessage: "Internal server error" }, Data: {} });
+  }
+};
+
+
 
 module.exports = {
   createProject,
@@ -355,4 +408,7 @@ module.exports = {
   getProjectMembers,
   editProject,
   deleteProject,
+  getMyInvitations, 
+  acceptProjectInvite, 
+  rejectProjectInvite
 };
