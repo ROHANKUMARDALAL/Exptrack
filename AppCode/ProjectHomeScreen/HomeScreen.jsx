@@ -106,14 +106,6 @@ const HomeScreen = ({ navigation, route }) => {
       item.amount,
     )}`,
   }));
-
-  useEffect(() => {
-    const received = route && route.params && route.params.project;
-    if (received) {
-      console.log('Received project via route params:', received);
-    }
-  }, [route]);
-
   // Bottom sheet modal state and animation
   const [sheetVisible, setSheetVisible] = useState(false);
   const screenHeight = Dimensions.get('window').height;
@@ -248,6 +240,7 @@ const HomeScreen = ({ navigation, route }) => {
             text="See all"
             onPress={() =>
               navigation.navigate('AllTransactions', {
+                projectName: route.params?.project?.name || 'Project',
                 transactions: formattedTransactions,
               })
             }
@@ -338,29 +331,29 @@ const HomeScreen = ({ navigation, route }) => {
               style={styles.input}
             />
 
-            <View style={styles.segmentedContainer}>
-              {['Income', 'Expense'].map(opt => (
-                <TouchableButton
-                  key={opt}
-                  onPress={() => setEntryKind(opt)}
-                  text={opt}
-                  backgroundColor={
-                    entryKind === opt
-                      ? opt === 'Income'
-                        ? '#16a34a'
-                        : '#4f46e5'
-                      : 'transparent'
-                  }
-                  textColor={entryKind === opt ? '#fff' : '#111827'}
-                  borderRadius={0}
-                  height={44}
-                  style={[
-                    styles.segmentButton,
-                    entryKind === opt && styles.segmentButtonActive,
-                  ]}
-                />
-              ))}
-            </View>
+        <View style={styles.segmentedContainer}>
+  {['Income', 'Expense'].map(opt => (
+    <TouchableButton
+      key={opt}
+      onPress={() => setEntryKind(opt)}
+      text={opt}
+      backgroundColor={
+        entryKind === opt
+          ? opt === 'Income'
+            ? '#16a34a' // Green for Income
+            : '#4f46e5' // Blue for Expense
+          : 'transparent'
+      }
+      textColor={entryKind === opt ? '#fff' : '#111827'}
+      borderRadius={0}
+      height={36}
+      style={[
+        styles.segmentButton,
+       
+      ]}
+    />
+  ))}
+</View>
 
             <TextInput
               placeholder="Amount"
@@ -376,7 +369,9 @@ const HomeScreen = ({ navigation, route }) => {
               placeholderTextColor="#000"
               value={description}
               onChangeText={setDescription}
-              style={styles.input}
+              style={[styles.input,{height: 100, textAlignVertical: 'center'}]}
+              multiline={true}
+              numberOfLines={4}
             />
 
             <TouchableButton
