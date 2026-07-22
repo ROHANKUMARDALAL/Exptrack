@@ -97,7 +97,70 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ Error: { ErrorCode: 400, ErrorMessage: 'Email is required' }, Data: {} });
+    }
 
+    const user = await userModel.findByEmail(email);
+    if (!user) {
+      return res.status(404).json({ Error: { ErrorCode: 404, ErrorMessage: 'User not found' }, Data: {} });
+    }
+
+    // Ek 15 minute ke liye valid temporary token generate karte hain
+    const resetToken = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '15m' });
+
+    // IDEAL CASE: Yahan Nodemailer ya SendGrid se email bheja jata hai. 
+    // Par abhi aapke testing ke liye hum token direct response me de rahe hain.
+    return res.json({ 
+      Error: { ErrorCode: 0, ErrorMessage: 'success' }, 
+      Data: { 
+        message: 'Password reset token generated. Usually, this is sent via email.',
+        resetToken: resetToken 
+      } 
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ Error: { ErrorCode: 500, ErrorMessage: 'Internal server error' }, Data: {} });
+  }
+};
+
+// NEW: Reset Password Flow
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ Error: { ErrorCode: 400, ErrorMessage: 'Token and newPassword are required' }, Data: {} });
+    }
+
+    // Token verify karein
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ Error: { ErrorCode: 401, ErrorMessage: 'Invalid or expired reset token' }, Data: {} });
+    }
+
+    // Naya password hash karein aur DB me update karein
+    const passwordHash = bcrypt.hashSync(newPassword, 10);
+    const changes = await userModel.updateUserPassword(decoded.userId, passwordHash);
+
+    if (changes === 0) {
+      return res.status(404).json({ Error: { ErrorCode: 404, ErrorMessage: 'User not found' }, Data: {} });
+    }
+
+    return res.json({ 
+      Error: { ErrorCode: 0, ErrorMessage: 'success' }, 
+      Data: { message: 'Password has been reset successfully. You can now login with the new password.' } 
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({ Error: { ErrorCode: 500, ErrorMessage: 'Internal server error' }, Data: {} });
+  }
+};
 
 module.exports = {
   signup,
@@ -105,4 +168,7 @@ module.exports = {
   profile,
   listUsers,
   deleteUser,
+  resetPassword,
+  forgotPassword
+
 };
