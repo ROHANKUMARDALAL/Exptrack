@@ -6,13 +6,17 @@ const Stack = createNativeStackNavigator();
 const StackScreen = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Login"
+      initialRouteName="SplashScreen"
       screenOptions={{
         headerShown: false,
       }}>
       <Stack.Screen
         name="Login"
         component={require('../LoginScreen/LoginScreen').default}
+      />
+      <Stack.Screen
+        name="SplashScreen"
+        component={require('../splashScreen/SplashScreen').default}
       />
       <Stack.Screen
         name="Home"

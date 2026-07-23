@@ -1,28 +1,45 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const LOGIN_TOKEN_KEY = 'LOGIN_TOKEN';
+const AUTH_DATA = 'AUTH_DATA';
 
-export const saveLoginToken = async token => {
+/**
+ * Save Auth Data
+ * {
+ *   token: "...",
+ *   user: {...}
+ * }
+ */
+export const saveAuthData = async authData => {
   try {
-    await AsyncStorage.setItem(LOGIN_TOKEN_KEY, token);
+    await AsyncStorage.setItem(
+      AUTH_DATA,
+      JSON.stringify(authData),
+    );
   } catch (error) {
-    console.warn('Failed to save login token:', error);
+    console.warn('Failed to save auth data:', error);
   }
 };
 
-export const getLoginToken = async () => {
+/**
+ * Get Auth Data
+ */
+export const getAuthData = async () => {
   try {
-    return AsyncStorage.getItem(LOGIN_TOKEN_KEY);
+    const data = await AsyncStorage.getItem(AUTH_DATA);
+    return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.warn('Failed to read login token:', error);
+    console.warn('Failed to get auth data:', error);
     return null;
   }
 };
 
-export const removeLoginToken = async () => {
+/**
+ * Clear Auth Data
+ */
+export const clearAuthData = async () => {
   try {
-    await AsyncStorage.removeItem(LOGIN_TOKEN_KEY);
+    await AsyncStorage.removeItem(AUTH_DATA);
   } catch (error) {
-    console.warn('Failed to remove login token:', error);
+    console.warn('Failed to clear auth data:', error);
   }
 };

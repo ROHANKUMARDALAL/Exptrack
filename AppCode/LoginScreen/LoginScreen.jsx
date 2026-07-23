@@ -11,15 +11,16 @@ import {
 import Toast from 'react-native-simple-toast';
 import styles from './LoginScreenStyles';
 import TouchableButton from '../components/TouchableOpacity/TouchableOpacity';
-import { saveLoginToken, getLoginToken } from '../utils/authStorage';
+import { saveAuthData,
+  getAuthData, } from '../utils/authStorage';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../redux/userSlice';
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureText, setSecureText] = useState(true);
-  const DUMMY_TOKEN = 'dummy-token-12345';
-const DUMMY_EMAIL = 'admin@gmail.com';
-const DUMMY_PASSWORD = 'Admin@123';
+  const dispatch=useDispatch();
   const validateEmail = email => {
     const regex =
       /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -28,50 +29,66 @@ const DUMMY_PASSWORD = 'Admin@123';
 
   useEffect(() => {
     const checkToken = async () => {
-      const token = await getLoginToken();
-      if (token) {
-        navigation.replace('ProjectScreen');
-      }
+     const authData = await getAuthData();
+if (authData?.token) {
+  navigation.replace('ProjectScreen');
+}
     };
     checkToken();
   }, [navigation]);
 
-  const handleLogin = () => {
+  const handleLogin = async() => {
     if (email.trim() === '') {
       Toast.show('Please enter email');
       return;
     }
-
     if (!validateEmail(email)) {
       Toast.show('Please enter a valid email');
       return;
     }
-
     if (password.trim() === '') {
       Toast.show('Please enter password');
       return;
     }
-
     if (password.length < 6) {
       Toast.show('Password must be at least 6 characters');
       return;
     }
-
+     const payload = {
+    email: email.trim(),
+    password,
+  };
+     try {
     setLoading(true);
-    setTimeout(async () => {
-      setLoading(false);
+const auth=require('./Service')
+    const response = await auth.login(payload);
+    console.log('Login Response =>', response);
+    if (response?.Error?.ErrorCode === 0 ) {
+      const responseData=response?.Data;
+      const authData = {
+  token: responseData.token,
+  user: responseData.user,
+};
+await saveAuthData(authData);
+     dispatch(
+  setUser({
+    token: authData.token,
+    user: authData.user,
+  }),
+);
 
-      if (
-        email.toLowerCase() === DUMMY_EMAIL.toLowerCase() &&
-        password === DUMMY_PASSWORD
-      ) {
-        await saveLoginToken(DUMMY_TOKEN);
-        Toast.show('Login Successful');
-        navigation.replace('ProjectScreen');
-      } else {
-        Toast.show('Invalid email or password');
-      }
-    }, 2000);
+      Toast.show(response?.message || 'Login Successful');
+
+      navigation.replace('ProjectScreen');
+    } else {
+      Toast.show(response?.Error?.ErrorMessage || 'Login Failed');
+    }
+  } catch (error) {
+    console.log('Login Error =>', error);
+    Toast.show(error?.message || 'Something went wrong');
+  } finally {
+    setLoading(false);
+  }
   };
 
 
@@ -149,7 +166,17 @@ const DUMMY_PASSWORD = 'Admin@123';
             Forgot Password?
           </Text>
         </TouchableOpacity>
+<TouchableOpacity
+  style={styles.registerContainer}
+  onPress={() => navigation.navigate('RegisterScreen')}>
+  <Text style={styles.registerText}>
+    Don't have an account?
+  </Text>
 
+  <Text style={styles.registerNow}>
+    Register Now
+  </Text>
+</TouchableOpacity>
       </View>
 
     </ScrollView>
